@@ -1,1 +1,16 @@
-﻿
+﻿{
+  "name": "microsaas-shop",
+  "private": true,
+  "packageManager": "pnpm@9",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier -w ."
+  },
+  "devDependencies": {
+    "prettier": "latest",
+    "turbo": "latest"
+  }
+}
