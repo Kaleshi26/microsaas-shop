@@ -1,1 +1,12 @@
-﻿
+﻿_format_version: "3.0"
+_transform: true
+
+services:
+  - name: api
+    url: http://host.docker.internal:3001
+    routes:
+      - name: api-root
+        paths:
+          - /api
+        strip_path: false
+        preserve_host: true
