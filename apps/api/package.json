@@ -1,1 +1,43 @@
-﻿
+﻿{
+  "name": "@microsaas/api",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@nestjs/apollo": "latest",
+    "@nestjs/common": "latest",
+    "@nestjs/core": "latest",
+    "@nestjs/graphql": "latest",
+    "@nestjs/microservices": "latest",
+    "@nestjs/platform-express": "latest",
+    "@prisma/client": "latest",
+    "apollo-server-core": "latest",
+    "graphql": "latest",
+    "@grpc/grpc-js": "latest",
+    "@grpc/proto-loader": "latest",
+    "ioredis": "latest",
+    "kafkajs": "latest",
+    "opensearch": "latest",
+    "pino": "latest",
+    "pino-http": "latest",
+    "prom-client": "latest",
+    "reflect-metadata": "latest",
+    "rxjs": "latest",
+    "stripe": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "latest",
+    "@nestjs/schematics": "latest",
+    "@nestjs/testing": "latest",
+    "prisma": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}
