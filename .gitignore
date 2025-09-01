@@ -1,1 +1,20 @@
-﻿
+﻿# dependencies
+node_modules
+.pnpm-store
+
+# builds
+dist
+.next
+out
+
+# env
+.env
+.env.local
+apps/**/.env
+infra/terraform/.terraform
+infra/terraform/terraform.tfstate*
+infra/terraform/.terraform.lock.hcl
+
+# logs
+*.log
+pnpm-debug.log
