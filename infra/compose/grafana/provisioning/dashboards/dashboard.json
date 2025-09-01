@@ -1,1 +1,17 @@
-﻿
+﻿{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "API HTTP Requests",
+      "targets": [
+        { "expr": "sum(rate(http_requests_total[1m])) by (route,method,status)" }
+      ],
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 }
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}
