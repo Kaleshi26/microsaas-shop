@@ -1,4 +1,5 @@
-﻿import { getSession } from '@auth0/nextjs-auth0';
+﻿// apps/web/app/profile/page.tsx
+import { getSession } from '@auth0/nextjs-auth0';
 export default async function Profile() {
   const session = await getSession();
   if (!session) return <a href="/api/auth/login">Login</a>;
