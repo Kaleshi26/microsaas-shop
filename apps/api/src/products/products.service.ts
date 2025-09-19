@@ -1,4 +1,5 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { redis } from '../common/redis';
 import { osClient } from '../common/opensearch';
