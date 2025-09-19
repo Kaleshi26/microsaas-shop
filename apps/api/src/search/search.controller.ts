@@ -1,4 +1,5 @@
-﻿import { Controller, Get, Query } from '@nestjs/common';
+﻿
+import { Controller, Get, Query } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { incHttp } from '../metrics/metrics.controller';
 
