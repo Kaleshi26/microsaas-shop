@@ -1,4 +1,5 @@
-﻿'use client';
+﻿
+'use client';
 import { useState } from 'react';
 
 const API = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
