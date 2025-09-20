@@ -1,4 +1,4 @@
-﻿
+﻿// apps/api/src/orders/orders.service.ts
 import { Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
 import { producer } from '../common/kafka';
