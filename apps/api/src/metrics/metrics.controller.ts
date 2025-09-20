@@ -1,4 +1,5 @@
-﻿import { Controller, Get } from '@nestjs/common';
+﻿
+import { Controller, Get } from '@nestjs/common';
 import client from 'prom-client';
 
 const register = new client.Registry();
