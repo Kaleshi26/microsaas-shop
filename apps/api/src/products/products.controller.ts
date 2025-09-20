@@ -1,4 +1,5 @@
-﻿import { Controller, Get, HttpCode, Post } from '@nestjs/common';
+﻿// apps/api/src/products/products.controller.ts
+import { Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { incHttp } from '../metrics/metrics.controller';
 
