@@ -1,4 +1,5 @@
-﻿import { getHome } from '../lib/contentful';
+﻿// apps/web/app/page.tsx
+import { getHome } from '../lib/contentful';
 
 export default async function Home() {
   const content = await getHome().catch(() => ({ title: 'MicroSaaS Shop', body: 'Welcome!' }));
