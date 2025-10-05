@@ -1,4 +1,5 @@
-﻿import './globals.css';
+﻿
+import './globals.css';
 import { ReactNode } from 'react';
 import Nav from '../components/Nav';
 
