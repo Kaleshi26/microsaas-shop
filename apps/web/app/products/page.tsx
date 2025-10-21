@@ -1,4 +1,4 @@
-﻿
+﻿// This file is part of the Next.js Commerce project.
 'use client';
 import useSWR from 'swr';
 import ProductCard from '../../components/ProductCard';
