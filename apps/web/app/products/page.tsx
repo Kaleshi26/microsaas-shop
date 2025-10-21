@@ -1,4 +1,5 @@
-﻿'use client';
+﻿
+'use client';
 import useSWR from 'swr';
 import ProductCard from '../../components/ProductCard';
 
