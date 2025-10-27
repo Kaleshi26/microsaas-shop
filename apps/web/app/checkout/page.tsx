@@ -1,4 +1,4 @@
-﻿// This file is part of the Next.js Commerce project.
+﻿
 'use client';
 import { useState } from 'react';
 
