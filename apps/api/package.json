@@ -12,6 +12,7 @@
   "dependencies": {
     "@nestjs/apollo": "latest",
     "@nestjs/common": "latest",
+    "@nestjs/config": "latest",
     "@nestjs/core": "latest",
     "@nestjs/graphql": "latest",
     "@nestjs/microservices": "latest",
@@ -23,14 +24,17 @@
     "@grpc/proto-loader": "latest",
     "ioredis": "latest",
     "kafkajs": "latest",
-    "opensearch": "latest",
+    "@opensearch-project/opensearch": "latest",
     "pino": "latest",
     "pino-http": "latest",
+    "pino-pretty": "latest",
     "prom-client": "latest",
     "reflect-metadata": "latest",
     "rxjs": "latest",
     "stripe": "latest",
-    "zod": "latest"
+    "zod": "latest",
+    "class-transformer": "latest",
+    "class-validator": "latest"
   },
   "devDependencies": {
     "@nestjs/cli": "latest",

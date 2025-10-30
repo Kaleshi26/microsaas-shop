@@ -1,9 +1,14 @@
 ﻿import { Module, OnModuleInit } from '@nestjs/common';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { InventoryService } from './inventory.service';
+import { InventoryController } from './inventory.controller';
+import { InventoryClientService } from './inventory-client.service';
 import { NestFactory } from '@nestjs/core';
 
-@Module({ providers: [InventoryService] })
+@Module({ 
+  providers: [InventoryService, InventoryClientService], 
+  controllers: [InventoryController] 
+})
 export class InventoryModule implements OnModuleInit {
   async onModuleInit() {
     const app = await NestFactory.createMicroservice<MicroserviceOptions>({}, {

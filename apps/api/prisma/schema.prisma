@@ -13,12 +13,37 @@ model Product {
   description String
   priceCents  Int
   imageUrl    String
+  category    String?
+  sku         String?  @unique
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@index([createdAt])
 }
 
 model Order {
   id          Int      @id @default(autoincrement())
   email       String
   amountCents Int
+  status      OrderStatus @default(PENDING)
+  stripeSessionId String?
+  items       Json
+  shippingAddress Json?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }
