@@ -1,5 +1,4 @@
-﻿// apps/web/app/page.tsx
-'use client';
+﻿'use client';
 
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingBag, Search, Shield, Zap } from 'lucide-react';
