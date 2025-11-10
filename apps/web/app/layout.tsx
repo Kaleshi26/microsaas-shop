@@ -1,4 +1,5 @@
-﻿import './globals.css';
+﻿// layout.tsx
+import './globals.css';
 import { ReactNode } from 'react';
 import { UserProvider } from '@auth0/nextjs-auth0/client';
 import { ThemeProvider } from '@/components/ui/theme-provider';
