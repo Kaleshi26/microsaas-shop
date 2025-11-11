@@ -1,4 +1,5 @@
-﻿'use client';
+﻿//page.tsx
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
