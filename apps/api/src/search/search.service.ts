@@ -75,9 +75,9 @@ export class SearchService {
       const res = await osClient.search({
         index: 'products',
         body: searchBody,
-      });
+      } as any);
 
-      const results = res.hits?.hits?.map((hit: any) => ({
+      const results = (res as any).hits?.hits?.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
         score: hit._score,
@@ -106,9 +106,9 @@ export class SearchService {
             },
           },
         },
-      });
+      } as any);
 
-      const suggestions = res.suggest?.product_suggest?.[0]?.options?.map(
+      const suggestions = (res as any).suggest?.product_suggest?.[0]?.options?.map(
         (option: any) => option.text
       ) || [];
 

@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "@microsaas/api",
   "private": true,
   "scripts": {
@@ -17,7 +17,7 @@
     "@nestjs/graphql": "latest",
     "@nestjs/microservices": "latest",
     "@nestjs/platform-express": "latest",
-    "@prisma/client": "latest",
+    "@prisma/client": "4.16.0",
     "apollo-server-core": "latest",
     "graphql": "latest",
     "@grpc/grpc-js": "latest",
@@ -40,7 +40,7 @@
     "@nestjs/cli": "latest",
     "@nestjs/schematics": "latest",
     "@nestjs/testing": "latest",
-    "prisma": "latest",
+    "prisma": "4.16.0",
     "tsx": "latest",
     "typescript": "latest"
   }

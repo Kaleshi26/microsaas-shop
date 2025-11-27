@@ -11,7 +11,7 @@ import { NestFactory } from '@nestjs/core';
 })
 export class InventoryModule implements OnModuleInit {
   async onModuleInit() {
-    const app = await NestFactory.createMicroservice<MicroserviceOptions>({}, {
+    const app = await NestFactory.createMicroservice<MicroserviceOptions>(InventoryModule, {
       transport: Transport.GRPC,
       options: {
         package: 'inventory',

@@ -14,14 +14,14 @@ export class InventoryClientService {
   private readonly logger = new Logger(InventoryClientService.name);
   private inventoryService: InventoryService;
 
-  @Client({
+  @Client(({
     transport: 1, // Transport.GRPC
     options: {
       package: 'inventory',
       protoPath: 'src/inventory/inventory.proto',
       url: 'localhost:50051',
     },
-  })
+  } as unknown) as any)
   private client: ClientGrpc;
 
   onModuleInit() {

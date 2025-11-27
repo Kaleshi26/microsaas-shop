@@ -8,7 +8,20 @@ import pino from 'pino';
 import pinoHttp from 'pino-http';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: false });
+  // markers for debugging startup flow
+  // eslint-disable-next-line no-console
+  console.log('bootstrap start');
+  let app;
+  try {
+    app = await NestFactory.create(AppModule, { logger: false });
+    // eslint-disable-next-line no-console
+    console.log('nest factory created');
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('error during NestFactory.create', err && err.stack ? err.stack : err);
+    // rethrow so the process exits and our wrappers capture it
+    throw err;
+  }
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
@@ -56,8 +69,23 @@ async function bootstrap() {
   });
 
   const port = configService.get('PORT');
+  // eslint-disable-next-line no-console
+  console.log('about to listen on port', port);
   await app.listen(port);
+  // eslint-disable-next-line no-console
+  console.log('app.listen returned');
   logger.log(`API listening on http://localhost:${port}`);
   logger.log(`Environment: ${configService.get('NODE_ENV')}`);
 }
 bootstrap();
+
+process.on('uncaughtException', (err) => {
+  // Make sure unexpected errors are logged so we can debug startup failures
+  // eslint-disable-next-line no-console
+  console.error('uncaughtException', err && err.stack ? err.stack : err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  // eslint-disable-next-line no-console
+  console.error('unhandledRejection', reason);
+});

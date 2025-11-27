@@ -33,8 +33,8 @@ export class OrdersController {
 
   @Post('/checkout')
   async checkout(@Body() body: any) {
-    const url = await this.svc.createCheckoutSession(body.items || []);
+    const result = await this.svc.create(body as any);
     incHttp('/orders/checkout', 'POST', 200);
-    return { url };
+    return { url: result.checkoutUrl };
   }
 }

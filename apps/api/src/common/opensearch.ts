@@ -1,4 +1,4 @@
-﻿import { Client } from 'opensearch';
+﻿import { Client } from '@opensearch-project/opensearch';
 const url = process.env.OPENSEARCH_URL || 'http://localhost:9200';
 export const osClient = new Client({
   node: url,
