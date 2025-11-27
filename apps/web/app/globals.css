@@ -1,6 +1,10 @@
-﻿@tailwind base;
-@tailwind components;
-@tailwind utilities;
+﻿@import "tailwindcss";
+
+/* IMPORTANT: This connects Tailwind v4 to your existing Shadcn config.
+  1. If your config file is named "tailwind.config.ts", change .js to .ts below.
+  2. If your config file is in the root folder, change the path to "../../tailwind.config.js" 
+*/
+@config "../tailwind.config.js";
 
 @layer base {
   :root {

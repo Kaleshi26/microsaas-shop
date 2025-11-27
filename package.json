@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "microsaas-shop",
   "private": true,
   "packageManager": "pnpm@10.18.0",
@@ -12,5 +12,8 @@
   "devDependencies": {
     "prettier": "latest",
     "turbo": "latest"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4"
   }
 }
