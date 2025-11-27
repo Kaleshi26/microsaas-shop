@@ -2,29 +2,30 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Filter, Grid, List, RefreshCw } from 'lucide-react';
+import { Filter, Grid, List } from 'lucide-react';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
 import ProductSkeleton from '@/components/ProductSkeleton';
-import SearchBar from '@/components/SearchBar';
-import { useToast } from '@/hooks/use-toast';
+import { Search } from 'lucide-react';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+// 1. POINT TO LOCAL MOCK API
+const API_BASE = '/api'; 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function Products() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const { toast } = useToast();
 
-  const { data: products, error, isLoading, mutate } = useSWR(`${API_BASE}/products`, fetcher);
+  // 2. FETCH FROM LOCAL API
+  const { data: products, error, isLoading } = useSWR(`${API_BASE}/products`, fetcher);
 
+  // 3. CLIENT-SIDE FILTERING (Since we don't have a real DB backend yet)
   const categories = products ? [...new Set(products.map((p: any) => p.category).filter(Boolean))] : [];
+  
   const filteredProducts = products?.filter((product: any) => {
     const matchesSearch = !searchQuery || 
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -32,23 +33,6 @@ export default function Products() {
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }) || [];
-
-  const handleReindex = async () => {
-    try {
-      await fetch(`${API_BASE}/products/reindex`, { method: 'POST' });
-      toast({
-        title: 'Success',
-        description: 'Products have been reindexed successfully!',
-      });
-      mutate();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to reindex products. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   if (error) {
     return (
@@ -59,9 +43,7 @@ export default function Products() {
             <p className="text-muted-foreground mb-4">
               There was an error loading the products. Please try again.
             </p>
-            <Button onClick={() => mutate()}>
-              Try Again
-            </Button>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
           </CardContent>
         </Card>
       </div>
@@ -83,18 +65,17 @@ export default function Products() {
               Discover our amazing collection of products
             </p>
           </div>
-          <Button onClick={handleReindex} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Reindex Search
-          </Button>
         </div>
 
         {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <SearchBar
-              placeholder="Search products..."
-              onSearch={setSearchQuery}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+                placeholder="Search products..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
             />
           </div>
           <div className="flex gap-2">
@@ -125,7 +106,7 @@ export default function Products() {
             >
               All Categories
             </Button>
-            {categories.map((category) => (
+            {categories.map((category: any) => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? 'default' : 'outline'}
@@ -147,18 +128,12 @@ export default function Products() {
       >
         <p className="text-muted-foreground">
           {isLoading ? 'Loading...' : `${filteredProducts.length} products found`}
-          {searchQuery && ` for "${searchQuery}"`}
-          {selectedCategory && ` in ${selectedCategory}`}
         </p>
       </motion.div>
 
       {/* Products Grid/List */}
       {isLoading ? (
-        <div className={`grid gap-6 ${
-          viewMode === 'grid' 
-            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-            : 'grid-cols-1'
-        }`}>
+        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
           {Array.from({ length: 6 }).map((_, i) => (
             <ProductSkeleton key={i} />
           ))}
@@ -167,11 +142,7 @@ export default function Products() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-              : 'grid-cols-1'
-          }`}
+          className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}
         >
           {filteredProducts.map((product: any, index: number) => (
             <ProductCard 
@@ -182,34 +153,9 @@ export default function Products() {
           ))}
         </motion.div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
-          <Card>
-            <CardContent className="p-8">
-              <h3 className="text-xl font-semibold mb-2">No Products Found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchQuery || selectedCategory
-                  ? 'Try adjusting your search or filters'
-                  : 'No products are available at the moment'
-                }
-              </p>
-              {(searchQuery || selectedCategory) && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedCategory('');
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+        <div className="text-center py-12">
+             <p className="text-muted-foreground">No products found.</p>
+        </div>
       )}
     </div>
   );

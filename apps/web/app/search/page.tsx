@@ -7,96 +7,52 @@ import { Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
 import ProductSkeleton from '@/components/ProductSkeleton';
-import { useToast } from '@/hooks/use-toast';
+import useSWR from 'swr';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
-
-interface SearchResult {
-  id: string;
-  name: string;
-  description: string;
-  priceCents: number;
-  imageUrl: string;
-  category?: string;
-  sku?: string;
-  isActive: boolean;
-  createdAt: string;
-  score?: number;
-}
+// 1. POINT TO LOCAL MOCK API
+const API_BASE = '/api';
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    category: '',
-    minPrice: '',
-    maxPrice: '',
-  });
+  const initialQuery = searchParams.get('q') || '';
+  const [query, setQuery] = useState(initialQuery);
   const [showFilters, setShowFilters] = useState(false);
-  const { toast } = useToast();
+  const [filters, setFilters] = useState({ category: '', minPrice: '', maxPrice: '' });
 
-  const searchProducts = async (searchQuery: string, searchFilters = filters) => {
-    if (!searchQuery.trim()) {
-      setResults([]);
-      return;
-    }
+  // 2. FETCH ALL DATA FIRST
+  const { data: allProducts, isLoading } = useSWR(`${API_BASE}/products`, fetcher);
 
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        q: searchQuery,
-        ...(searchFilters.category && { category: searchFilters.category }),
-        ...(searchFilters.minPrice && { minPrice: searchFilters.minPrice }),
-        ...(searchFilters.maxPrice && { maxPrice: searchFilters.maxPrice }),
-      });
+  // 3. FILTER ON CLIENT SIDE
+  const results = allProducts?.filter((product: any) => {
+    // Search Text Match
+    const matchesSearch = !query || 
+      product.name.toLowerCase().includes(query.toLowerCase()) || 
+      product.description.toLowerCase().includes(query.toLowerCase());
 
-      const response = await fetch(`${API_BASE}/search?${params}`);
-      const data = await response.json();
-      setResults(data);
-    } catch (error) {
-      console.error('Search error:', error);
-      toast({
-        title: 'Search Error',
-        description: 'Failed to search products. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // Category Match
+    const matchesCategory = !filters.category || product.category === filters.category;
 
-  useEffect(() => {
-    if (query) {
-      searchProducts(query);
-    }
-  }, [query]);
+    // Price Match
+    const price = product.priceCents / 100;
+    const matchesMin = !filters.minPrice || price >= Number(filters.minPrice);
+    const matchesMax = !filters.maxPrice || price <= Number(filters.maxPrice);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    searchProducts(query);
-  };
+    return matchesSearch && matchesCategory && matchesMin && matchesMax;
+  }) || [];
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    if (query) {
-      searchProducts(query, newFilters);
-    }
+    setFilters({ ...filters, [key]: value });
   };
 
   const clearFilters = () => {
     setFilters({ category: '', minPrice: '', maxPrice: '' });
-    if (query) {
-      searchProducts(query, { category: '', minPrice: '', maxPrice: '' });
-    }
+    setQuery('');
   };
 
-  const categories = [...new Set(results.map(r => r.category).filter(Boolean))];
+  const categories = allProducts ? [...new Set(allProducts.map((p: any) => p.category).filter(Boolean))] : [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -109,7 +65,7 @@ export default function SearchPage() {
         <h1 className="text-3xl font-bold mb-4">Search Products</h1>
         
         {/* Search Form */}
-        <form onSubmit={handleSearch} className="flex gap-4 mb-6">
+        <div className="flex gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -120,9 +76,6 @@ export default function SearchPage() {
               className="pl-10"
             />
           </div>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Searching...' : 'Search'}
-          </Button>
           <Button
             type="button"
             variant="outline"
@@ -131,7 +84,7 @@ export default function SearchPage() {
             <Filter className="h-4 w-4 mr-2" />
             Filters
           </Button>
-        </form>
+        </div>
 
         {/* Filters */}
         {showFilters && (
@@ -149,10 +102,10 @@ export default function SearchPage() {
                     <select
                       value={filters.category}
                       onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="w-full p-2 border rounded-md"
+                      className="w-full p-2 border rounded-md bg-background"
                     >
                       <option value="">All Categories</option>
-                      {categories.map((category) => (
+                      {categories.map((category: any) => (
                         <option key={category} value={category}>
                           {category}
                         </option>
@@ -190,19 +143,12 @@ export default function SearchPage() {
         )}
       </motion.div>
 
-      {/* Results */}
-      {query && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-6"
-        >
-          <p className="text-muted-foreground">
-            {isLoading ? 'Searching...' : `${results.length} results found`}
-            {query && ` for "${query}"`}
-          </p>
-        </motion.div>
-      )}
+      {/* Results Count */}
+      <motion.div className="mb-6">
+        <p className="text-muted-foreground">
+          {isLoading ? 'Searching...' : `${results.length} results found`}
+        </p>
+      </motion.div>
 
       {/* Search Results */}
       {isLoading ? (
@@ -217,52 +163,12 @@ export default function SearchPage() {
           animate={{ opacity: 1 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {results.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-square relative">
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                  {product.category && (
-                    <Badge className="absolute top-2 left-2">
-                      {product.category}
-                    </Badge>
-                  )}
-                  {product.score && (
-                    <Badge variant="secondary" className="absolute top-2 right-2">
-                      {Math.round(product.score * 100)}% match
-                    </Badge>
-                  )}
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                    {product.name}
-                  </h3>
-                  <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-primary">
-                      ${(product.priceCents / 100).toFixed(2)}
-                    </span>
-                    <Button size="sm">
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+          {results.map((product: any, index: number) => (
+            // USING THE SHARED PRODUCT CARD COMPONENT
+            <ProductCard key={product.id} product={product} index={index} />
           ))}
         </motion.div>
-      ) : query && !isLoading ? (
+      ) : (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -272,7 +178,7 @@ export default function SearchPage() {
             <CardContent className="p-8">
               <h3 className="text-xl font-semibold mb-2">No Results Found</h3>
               <p className="text-muted-foreground mb-4">
-                No products found for "{query}". Try adjusting your search terms or filters.
+                No products found. Try adjusting your search terms or filters.
               </p>
               <Button variant="outline" onClick={clearFilters}>
                 Clear Filters
@@ -280,23 +186,7 @@ export default function SearchPage() {
             </CardContent>
           </Card>
         </motion.div>
-      ) : !query ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
-          <Card>
-            <CardContent className="p-8">
-              <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Start Your Search</h3>
-              <p className="text-muted-foreground">
-                Enter a search term above to find products
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ) : null}
+      )}
     </div>
   );
 }

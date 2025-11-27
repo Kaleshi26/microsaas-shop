@@ -1,282 +1,178 @@
 ﻿'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, ArrowLeft, ShoppingBag } from 'lucide-react';
+import { Loader2, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useCartStore } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+// Zod Schema for Validation (Show this off!)
+const checkoutSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  address: z.string().min(5, 'Address is too short'),
+  city: z.string().min(2, 'City is required'),
+  zipCode: z.string().min(5, 'Invalid ZIP code'),
+  cardNumber: z.string().min(16, 'Card number must be 16 digits').max(19),
+});
 
-export default function Checkout() {
-  const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<'idle' | 'success' | 'canceled' | 'error'>('idle');
+type CheckoutForm = z.infer<typeof checkoutSchema>;
+
+export default function CheckoutPage() {
+  const { cart, clearCart } = useCartStore();
   const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const success = searchParams.get('success');
-  const canceled = searchParams.get('canceled');
-  const orderId = searchParams.get('orderId');
+  const totalCents = cart.reduce((acc, item) => acc + item.priceCents, 0);
 
-  useEffect(() => {
-    if (success === '1') {
-      setOrderStatus('success');
-      toast({
-        title: 'Payment Successful!',
-        description: 'Your order has been processed successfully.',
-      });
-    } else if (canceled === '1') {
-      setOrderStatus('canceled');
-      toast({
-        title: 'Payment Canceled',
-        description: 'Your payment was canceled. You can try again anytime.',
-        variant: 'destructive',
-      });
-    }
-  }, [success, canceled, toast]);
+  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
+    resolver: zodResolver(checkoutSchema),
+  });
 
-  const handleCheckout = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'customer@example.com', // In a real app, this would come from user auth
-          items: [
-            {
-              productId: 1,
-              quantity: 1,
-              priceCents: 5900
-            }
-          ],
-          shippingAddress: {
-            name: 'John Doe',
-            line1: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            postalCode: '10001',
-            country: 'US'
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create order');
-      }
-
-      const { checkoutUrl } = await response.json();
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      setOrderStatus('error');
-      toast({
-        title: 'Checkout Error',
-        description: 'Failed to process checkout. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = async (data: CheckoutForm) => {
+    setIsProcessing(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setIsProcessing(false);
+    setIsSuccess(true);
+    clearCart();
+    toast({
+        title: "Order Placed Successfully!",
+        description: `Thank you ${data.firstName}, your order is on the way.`
+    });
   };
 
-  if (orderStatus === 'success') {
+  if (isSuccess) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <Card>
-            <CardContent className="p-8">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold mb-2">Payment Successful!</h1>
-              <p className="text-muted-foreground mb-6">
-                Thank you for your purchase. Your order has been processed successfully.
-              </p>
-              {orderId && (
-                <Badge variant="outline" className="mb-6">
-                  Order ID: {orderId}
-                </Badge>
-              )}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild>
-                  <Link href="/products">
-                    Continue Shopping
-                  </Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/profile">
-                    View Orders
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+        <div className="container py-20 flex flex-col items-center justify-center text-center">
+            <motion.div 
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6"
+            >
+                <CheckCircle className="h-10 w-10" />
+            </motion.div>
+            <h1 className="text-3xl font-bold mb-2">Order Confirmed!</h1>
+            <p className="text-muted-foreground mb-8">Your order #MS-{Math.floor(Math.random() * 10000)} has been placed.</p>
+            <Button asChild size="lg">
+                <Link href="/products">Continue Shopping</Link>
+            </Button>
+        </div>
     );
   }
 
-  if (orderStatus === 'canceled') {
+  if (cart.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <Card>
-            <CardContent className="p-8">
-              <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold mb-2">Payment Canceled</h1>
-              <p className="text-muted-foreground mb-6">
-                Your payment was canceled. No charges have been made to your account.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button onClick={handleCheckout} disabled={loading}>
-                  Try Again
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/products">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Products
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (orderStatus === 'error') {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <Card>
-            <CardContent className="p-8">
-              <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold mb-2">Checkout Error</h1>
-              <p className="text-muted-foreground mb-6">
-                There was an error processing your checkout. Please try again.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button onClick={handleCheckout} disabled={loading}>
-                  {loading ? 'Processing...' : 'Try Again'}
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/products">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Products
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+        <div className="container py-20 text-center">
+            <h1 className="text-2xl font-bold mb-4">Your Cart is Empty</h1>
+            <Button asChild>
+                <Link href="/products">Go to Products</Link>
+            </Button>
+        </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <h1 className="text-3xl font-bold mb-2">Checkout</h1>
-        <p className="text-muted-foreground">
-          Complete your purchase securely with Stripe
-        </p>
-      </motion.div>
+    <div className="container py-10 max-w-5xl">
+      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+      
+      <div className="grid md:grid-cols-3 gap-8">
+        {/* Form Section */}
+        <div className="md:col-span-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Shipping & Payment</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">First Name</label>
+                                <Input {...register('firstName')} placeholder="John" />
+                                {errors.firstName && <p className="text-red-500 text-xs">{errors.firstName.message}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Last Name</label>
+                                <Input {...register('lastName')} placeholder="Doe" />
+                                {errors.lastName && <p className="text-red-500 text-xs">{errors.lastName.message}</p>}
+                            </div>
+                        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Email</label>
+                            <Input {...register('email')} placeholder="john@example.com" />
+                            {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Address</label>
+                            <Input {...register('address')} placeholder="123 Main St" />
+                            {errors.address && <p className="text-red-500 text-xs">{errors.address.message}</p>}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">City</label>
+                                <Input {...register('city')} placeholder="New York" />
+                                {errors.city && <p className="text-red-500 text-xs">{errors.city.message}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">ZIP Code</label>
+                                <Input {...register('zipCode')} placeholder="10001" />
+                                {errors.zipCode && <p className="text-red-500 text-xs">{errors.zipCode.message}</p>}
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t mt-4">
+                             <label className="text-sm font-medium block mb-2">Card Number (Mock)</label>
+                             <Input {...register('cardNumber')} placeholder="0000 0000 0000 0000" />
+                             {errors.cardNumber && <p className="text-red-500 text-xs">{errors.cardNumber.message}</p>}
+                        </div>
+
+                        <Button type="submit" className="w-full mt-6" size="lg" disabled={isProcessing}>
+                            {isProcessing ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...
+                                </>
+                            ) : (
+                                `Pay $${(totalCents / 100).toFixed(2)}`
+                            )}
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
+
         {/* Order Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <ShoppingBag className="h-5 w-5 mr-2" />
-              Order Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                  <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Pro Hoodie</h3>
-                  <p className="text-sm text-muted-foreground">Cozy dev hoodie</p>
-                  <p className="text-sm">Quantity: 1</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">$59.00</p>
-                </div>
-              </div>
-              
-              <div className="border-t pt-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Subtotal</span>
-                  <span>$59.00</span>
-                </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Shipping</span>
-                  <span>Free</span>
-                </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Tax</span>
-                  <span>$0.00</span>
-                </div>
-                <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span>Total</span>
-                  <span>$59.00</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Checkout Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div className="text-center p-6 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-4">
-                  This is a demo checkout. Click the button below to proceed with Stripe's secure payment system.
-                </p>
-                <Button 
-                  onClick={handleCheckout} 
-                  disabled={loading}
-                  className="w-full"
-                  size="lg"
-                >
-                  {loading ? 'Processing...' : 'Proceed to Payment'}
-                </Button>
-              </div>
-              
-              <div className="text-xs text-muted-foreground text-center">
-                <p>Powered by Stripe • Secure payment processing</p>
-                <p>Your payment information is encrypted and secure</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {cart.map((item, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                            <span className="truncate w-32">{item.name}</span>
+                            <span>${(item.priceCents/100).toFixed(2)}</span>
+                        </div>
+                    ))}
+                    <div className="border-t pt-4 flex justify-between font-bold text-lg">
+                        <span>Total</span>
+                        <span>${(totalCents / 100).toFixed(2)}</span>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
       </div>
     </div>
   );
