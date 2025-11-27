@@ -3,21 +3,13 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Star, Package } from 'lucide-react';
+import { ShoppingCart, Package, Check } from 'lucide-react'; // Added Check icon
 import { Card, CardContent, CardFooter } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  priceCents: number;
-  imageUrl: string;
-  category?: string;
-  available?: number;
-  isActive: boolean;
-}
+import { useCartStore, Product } from '@/lib/store'; // Import store
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast'; // Assuming you have this from file tree
 
 interface ProductCardProps {
   product: Product;
@@ -27,6 +19,26 @@ interface ProductCardProps {
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const isInStock = (product.available ?? 0) > 0;
   const price = (product.priceCents / 100).toFixed(2);
+  
+  // Logic hooks
+  const addToCart = useCartStore((state) => state.addToCart);
+  const { toast } = useToast();
+  const [isAdded, setIsAdded] = useState(false);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent triggering the Link if wrapped
+    
+    addToCart(product);
+    
+    // Visual feedback
+    setIsAdded(true);
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+    
+    setTimeout(() => setIsAdded(false), 2000);
+  };
 
   return (
     <motion.div
@@ -94,11 +106,16 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             </Button>
             <Button 
               size="icon" 
-              variant="outline"
+              variant={isAdded ? "default" : "outline"} // Change style on add
               disabled={!isInStock}
-              className="shrink-0"
+              className="shrink-0 transition-all duration-300"
+              onClick={handleAddToCart}
             >
-              <ShoppingCart className="h-4 w-4" />
+              {isAdded ? (
+                <Check className="h-4 w-4" /> 
+              ) : (
+                <ShoppingCart className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </CardFooter>

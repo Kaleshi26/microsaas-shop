@@ -8,8 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import ProductCard from '@/components/ProductCard';
 import ProductSkeleton from '@/components/ProductSkeleton';
 import useSWR from 'swr';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+ 
+const API_BASE = '/api'; // This points to apps/web/app/api
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function Home() {

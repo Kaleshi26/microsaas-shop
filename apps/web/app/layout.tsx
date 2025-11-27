@@ -11,7 +11,7 @@ export const metadata = {
   description: 'Modern e-commerce platform built with Next.js and NestJS',
   keywords: 'e-commerce, shop, products, nextjs, nestjs',
   authors: [{ name: 'MicroSaaS Team' }],
-};
+}; 
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
