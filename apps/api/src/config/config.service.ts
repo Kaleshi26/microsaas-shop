@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const configSchema = z.object({
   // Database
-  DATABASE_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/microsaas'),
+  DATABASE_URL: z.string().default('postgresql://postgres:postgres@localhost:5433/microsaas'),
   
   // Redis
   REDIS_URL: z.string().default('redis://localhost:6379'),

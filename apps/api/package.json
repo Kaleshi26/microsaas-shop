@@ -19,6 +19,8 @@
     "@nestjs/platform-express": "latest",
     "@prisma/client": "4.16.0",
     "apollo-server-core": "latest",
+    "@apollo/server": "4.11.0",
+    "@as-integrations/express5": "latest",
     "graphql": "latest",
     "@grpc/grpc-js": "latest",
     "@grpc/proto-loader": "latest",

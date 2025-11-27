@@ -1,46 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Client, ClientGrpc } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
-
-interface InventoryService {
-  getStock(data: { productId: number }): Observable<{ productId: number; available: number }>;
-  updateStock(data: { productId: number; quantity: number }): Observable<{ success: boolean }>;
-  reserveStock(data: { productId: number; quantity: number }): Observable<{ success: boolean }>;
-  releaseStock(data: { productId: number; quantity: number }): Observable<{ success: boolean }>;
-}
+import { InventoryService } from './inventory.service';
 
 @Injectable()
 export class InventoryClientService {
   private readonly logger = new Logger(InventoryClientService.name);
-  private inventoryService: InventoryService;
 
-  @Client(({
-    transport: 1, // Transport.GRPC
-    options: {
-      package: 'inventory',
-      protoPath: 'src/inventory/inventory.proto',
-      url: 'localhost:50051',
-    },
-  } as unknown) as any)
-  private client: ClientGrpc;
-
-  onModuleInit() {
-    this.inventoryService = this.client.getService<InventoryService>('InventoryService');
-  }
+  constructor(private readonly inventoryService: InventoryService) {}
 
   async getStock(productId: number): Promise<{ productId: number; available: number }> {
     try {
-      return await this.inventoryService.getStock({ productId }).toPromise();
+      return await this.inventoryService.getStock(productId);
     } catch (error) {
       this.logger.error(`Failed to get stock for product ${productId}`, error);
-      // Return default stock if service is unavailable
       return { productId, available: 0 };
     }
   }
 
   async updateStock(productId: number, quantity: number): Promise<boolean> {
     try {
-      const result = await this.inventoryService.updateStock({ productId, quantity }).toPromise();
+      const result = await this.inventoryService.updateStock(productId, quantity);
       return result.success;
     } catch (error) {
       this.logger.error(`Failed to update stock for product ${productId}`, error);
@@ -50,7 +28,7 @@ export class InventoryClientService {
 
   async reserveStock(productId: number, quantity: number): Promise<boolean> {
     try {
-      const result = await this.inventoryService.reserveStock({ productId, quantity }).toPromise();
+      const result = await this.inventoryService.reserveStock(productId, quantity);
       return result.success;
     } catch (error) {
       this.logger.error(`Failed to reserve stock for product ${productId}`, error);
@@ -60,7 +38,7 @@ export class InventoryClientService {
 
   async releaseStock(productId: number, quantity: number): Promise<boolean> {
     try {
-      const result = await this.inventoryService.releaseStock({ productId, quantity }).toPromise();
+      const result = await this.inventoryService.releaseStock(productId, quantity);
       return result.success;
     } catch (error) {
       this.logger.error(`Failed to release stock for product ${productId}`, error);
