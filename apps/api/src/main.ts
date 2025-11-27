@@ -2,6 +2,9 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
 import pino from 'pino';
@@ -13,7 +16,7 @@ async function bootstrap() {
   console.log('bootstrap start');
   let app;
   try {
-    app = await NestFactory.create(AppModule, { logger: false });
+    app = await NestFactory.create(AppModule);
     // eslint-disable-next-line no-console
     console.log('nest factory created');
   } catch (err) {
@@ -67,6 +70,34 @@ async function bootstrap() {
     await app.close();
     process.exit(0);
   });
+
+  const protoCandidates = [
+    join(__dirname, 'inventory', 'inventory.proto'),
+    join(process.cwd(), 'src', 'inventory', 'inventory.proto'),
+    join(process.cwd(), 'apps', 'api', 'src', 'inventory', 'inventory.proto')
+  ];
+  const protoPath = protoCandidates.find((candidate) => existsSync(candidate)) ?? protoCandidates[0];
+  // eslint-disable-next-line no-console
+  console.log('Using inventory proto at', protoPath);
+
+  console.log('Starting inventory microservice with proto:', protoPath);
+
+  app.connectMicroservice({
+    transport: Transport.GRPC,
+    options: {
+      package: 'inventory',
+      protoPath,
+      url: '0.0.0.0:50051'
+    }
+  });
+
+  try {
+    await app.startAllMicroservices();
+    console.log('Inventory microservice started');
+    logger.log('gRPC InventoryService running on 0.0.0.0:50051');
+  } catch (error) {
+    logger.error('Failed to start inventory gRPC microservice', error as Error);
+  }
 
   const port = configService.get('PORT');
   // eslint-disable-next-line no-console
