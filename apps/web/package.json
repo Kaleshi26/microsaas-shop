@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "@microsaas/web",
   "private": true,
   "type": "module",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "latest",
+    "@hookform/resolvers": "latest",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-avatar": "latest",
@@ -22,7 +23,6 @@
     "@radix-ui/react-radio-group": "latest",
     "@radix-ui/react-select": "latest",
     "@radix-ui/react-separator": "latest",
-    "@radix-ui/react-sheet": "latest",
     "@radix-ui/react-slider": "latest",
     "@radix-ui/react-switch": "latest",
     "@radix-ui/react-tabs": "latest",
@@ -40,7 +40,6 @@
     "react": "latest",
     "react-dom": "latest",
     "react-hook-form": "latest",
-    "@hookform/resolvers": "latest",
     "swr": "latest",
     "tailwind-merge": "latest",
     "tailwindcss": "latest",
@@ -48,6 +47,7 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@types/react": "19.2.7",
     "typescript": "latest"
   }
 }
